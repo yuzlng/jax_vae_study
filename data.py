@@ -1,19 +1,23 @@
 import numpy as np
 import jax
-import torchvision.datasets as datasets
-import torch.utils.data.dataloader as DataLoader
+import torchvision.datasets as datasets # torchvision.datasets -> 다양한 dataset이 있음. 
+import torch.utils.data.dataloader as DataLoader    # DataLoader는 데이터를 미니 배치 단위로 나누어서 제공해주는 역할
 from hparam import Hyperparameters 
 hps = Hyperparameters()
 
 # For transformation
 def image_to_numpy(img):
+    """
+    이미지 데이터를 NumPy 배열로 변환
+    픽셀 값의 범위를 -1에서 1 사이로 정규화
+    """
     img = np.array(img, dtype=np.float32)
     if img.max() > 1:
         img = img / 255. * 2. - 1.
     return img
 
 # General numpy collate function for JAX
-def numpy_collate(batch):
+def numpy_collate(batch): # batch를 NumPy 배열로 병합
     if isinstance(batch[0], np.ndarray):
         return np.stack(batch)
     elif isinstance(batch[0], (tuple,list)):

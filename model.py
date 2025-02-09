@@ -13,7 +13,7 @@ class Encoder(nn.Module):
     """
     features: int = hps.channel_feature_size
     training: bool = True
-    latent_dim: int = hps.hidden_layer_size
+    latent_dim: int = hps.hidden_layer_size # latent space의 차원 
 
     @nn.compact
     def __call__(self, x):
@@ -36,10 +36,10 @@ class Encoder(nn.Module):
         z3 = nn.Conv(self.features * 4, kernel_size=(3, 3))(z3)
         z3 = nn.BatchNorm(use_running_average=not self.training)(z3)
         z3 = nn.relu(z3)
-        z = einops.rearrange(z3, 'b c h w -> b (c h w)')
+        z = einops.rearrange(z3, 'b c h w -> b (c h w)')    # 2차원 tensor 
 
         # Latent space
-        mean_z = nn.Dense(features=self.latent_dim)(z)
+        mean_z = nn.Dense(features=self.latent_dim)(z)  # batch_size x latent_dim -> 배치마다 32차원 벡터가 출력
         logvar_z = nn.Dense(features=self.latent_dim)(z)
 
         return mean_z, logvar_z, z3.shape   # z3.shape : decoder에서 데이터 복원에 사용하기 위해
@@ -110,13 +110,13 @@ class VAE(nn.Module):
         ## 3. generator 
         x_recon = self.decoder(z, *z_shape)
  
-        return x_recon
+        return x_recon, mean_z, logvar_z
     
 
 if __name__ == "__main__":
     key = random.PRNGKey(0)
     key, rng = random.split(key, 2)
-    x = jax.random.normal(rng, (hps.batch_size, 28, 28, hps.channel_out_size))
+    x = jax.random.normal(rng, (hps.batch_size, 28, 28, hps.channel_out_size))  # 임의로 data 생성
     
     encoder = Encoder()
     decoder = Decoder()
